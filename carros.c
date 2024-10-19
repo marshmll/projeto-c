@@ -88,19 +88,19 @@ int main(void)
  *
  * @return int
  */
-int count_lines(FILE *file)
+int count_lines(FILE *stream)
 {
     int line_count = 1; // Assumindo que o arquivo possui ao menos uma linha.
 
     char c;
     do
     {
-        c = fgetc(file);
+        c = fgetc(stream);
         if (c == '\n')
             line_count++;
     } while (c != EOF);
 
-    rewind(file); // Retornando o ponteiro de stream para o início do arquivo.
+    rewind(stream); // Retornando o ponteiro de stream para o início do arquivo.
 
     return line_count;
 }
@@ -109,7 +109,7 @@ int count_lines(FILE *file)
  * @brief Lê todos os carros presentes no arquivo em structs e os insere em ordem
  * não-decrescente em um dado vetor.
  */
-void read_cars(FILE *file, Car cars[], int max_cars)
+void read_cars(FILE *stream, Car cars[], int max_cars)
 {
     // Variáveis auxiliares.
     int cars_vec_size = 0;
@@ -125,22 +125,22 @@ void read_cars(FILE *file, Car cars[], int max_cars)
         float price;
 
         // Lê a marca.
-        read_string(brand, MAX_BRAND_LENGTH, file);
+        read_string(brand, MAX_BRAND_LENGTH, stream);
 
         // Lê o modelo.
-        read_string(model, MAX_MODEL_LENGTH, file);
+        read_string(model, MAX_MODEL_LENGTH, stream);
 
         // Lê o ano.
-        fscanf(file, "%d", &year);
-        consume_input_garbage(file);
+        fscanf(stream, "%d", &year);
+        consume_input_garbage(stream);
 
         // Lê a quilometragem.
-        fscanf(file, "%d", &mileage);
-        consume_input_garbage(file);
+        fscanf(stream, "%d", &mileage);
+        consume_input_garbage(stream);
 
         // Lê o valor/preço.
-        fscanf(file, "%f", &price);
-        consume_input_garbage(file);
+        fscanf(stream, "%f", &price);
+        consume_input_garbage(stream);
 
         // Insere os dados no struct.
         strcpy(car.brand, brand);
@@ -187,9 +187,9 @@ void read_cars(FILE *file, Car cars[], int max_cars)
  * @brief Lê uma string de um stream com um tamanho máximo, substituindo
  * CRLF por NUL.
  */
-void read_string(char dst[], int max, FILE *file)
+void read_string(char dst[], int max, FILE *stream)
 {
-    fgets(dst, max, file);
+    fgets(dst, max, stream);
 
     int CRLF = strcspn(dst, "\r\n");
     dst[CRLF] = '\0';
@@ -199,11 +199,11 @@ void read_string(char dst[], int max, FILE *file)
  * @brief Consome quaisquer caracteres de um stream até que encontre um
  * newline ou EOF
  */
-void consume_input_garbage(FILE *file)
+void consume_input_garbage(FILE *stream)
 {
     char c;
     do
-        c = fgetc(file);
+        c = fgetc(stream);
     while (c != '\n' && c != EOF);
 }
 
