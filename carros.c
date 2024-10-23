@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE_LENGTH 100
-#define MAX_BRAND_LENGTH 20
-#define MAX_MODEL_LENGTH 30
+#define MAX_LINE_LENGTH 100 // Tamanho máximo de leitura de linhas.
+#define MAX_BRAND_LENGTH 20 // Tamanho máximo da string de marca.
+#define MAX_MODEL_LENGTH 30 // Tamanho máximo da string de modelo.
+#define EXTRA_CARS_SPAN 1   // Tamanho máximo de carros extras que podem ser inseridos a mais.
 
 typedef struct
 {
@@ -29,19 +30,21 @@ void print_car_data(Car *car);
 void show_complete_relation(Car cars[], int cars_amount);
 void show_brand_only(Car cars[], int cars_amount, char *brand);
 void show_between_price_range(Car cars[], int cars_amount, float min, float max);
-
+void insert_new_car(Car cars[], int *cars_amount, Car *new_car);
 void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage);
 
 int main(void)
 {
     FILE *file = fopen("carros.txt", "r");
     const int LINE_COUNT = count_lines(file);
+    const int INITIAL_CARS_AMOUNT = LINE_COUNT / 5;
 
     // Cada carro ocupa 5 linhas.
-    int cars_amount = LINE_COUNT / 5;
+    int cars_amount = INITIAL_CARS_AMOUNT;
 
-    // Cria um vetor com espaço suficiente para todos os carros presentes no arquivo.
-    Car cars[cars_amount];
+    // Cria um vetor com espaço suficiente para todos os carros presentes no
+    // arquivo + os carros extras.
+    Car cars[INITIAL_CARS_AMOUNT + EXTRA_CARS_SPAN];
 
     // Lê todos os registros do arquivo.
     read_cars(file, cars, cars_amount);
@@ -94,6 +97,41 @@ int main(void)
             break;
         case 'd':
             printf("D - Inserir um novo registro de carro no vetor; todos os dados do carro devem ser fornecidos pelo usuário via teclado.\n\n");
+
+            // Caso o vetor tenha sido completamente preenchido
+            if (cars_amount >= INITIAL_CARS_AMOUNT + EXTRA_CARS_SPAN)
+            {
+                printf("A quantidade máxima de carros no vetor foi atingida.\n\n");
+                break;
+            }
+
+            Car car;
+
+            // Lê a marca.
+            printf("Digite a marca do novo carro: ");
+            read_string(car.brand, MAX_BRAND_LENGTH, stdin);
+
+            // Lê o modelo.
+            printf("Digite o modelo do novo carro: ");
+            read_string(car.model, MAX_MODEL_LENGTH, stdin);
+
+            // Lê o ano.
+            printf("Digite o ano do novo carro: ");
+            fscanf(stdin, "%d", &(car.year));
+            consume_input_garbage(stdin);
+
+            // Lê a quilometragem.
+            printf("Digite a quilometragem do novo carro: ");
+            fscanf(stdin, "%d", &(car.mileage));
+            consume_input_garbage(stdin);
+
+            // Lê o valor/preço.
+            printf("Digite o preço do novo carro: ");
+            fscanf(stdin, "%f", &(car.price));
+            consume_input_garbage(stdin);
+
+            insert_new_car(cars, &cars_amount, &car);
+
             break;
         case 'e':
             printf("E - Remover todos os registros de carros do vetor cuja kilometragem seja superior a um valor fornecido pelo usuário via teclado.\n\n");
@@ -371,4 +409,14 @@ void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage)
     // Se não encontrou nenhum registro, avisa o usuário.
     if (!found)
         printf("Nenhum carro com mais de %d km foi encontrado.\n\n", max_mileage);
+}
+
+void insert_new_car(Car cars[], int *cars_amount, Car *new_car)
+{
+    int front_index = *cars_amount;
+    cars[front_index] = *new_car;
+    (*cars_amount)++;
+
+    printf("INSERIDO NOVO CARRO: ");
+    print_car_data(&cars[front_index]);
 }
