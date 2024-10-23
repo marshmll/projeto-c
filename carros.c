@@ -1,3 +1,10 @@
+/**
+ * PROGRAMAÇÃO IMPERATIVA
+ * Nome: Renan da Silva Oliveira Andrade.
+ * 
+ * 23/10/2024.
+ */
+
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -50,9 +57,10 @@ int main(void)
     }
 
     const int LINE_COUNT = count_lines(file);
+    
+    // Cada carro ocupa 5 linhas.
     const int INITIAL_CARS_AMOUNT = LINE_COUNT / 5;
 
-    // Cada carro ocupa 5 linhas.
     int cars_amount = INITIAL_CARS_AMOUNT;
 
     // Cria um vetor com espaço suficiente para todos os carros presentes no
