@@ -7,7 +7,7 @@
 #define MAX_LINE_LENGTH 100 // Tamanho máximo de leitura de linhas.
 #define MAX_BRAND_LENGTH 20 // Tamanho máximo da string de marca.
 #define MAX_MODEL_LENGTH 30 // Tamanho máximo da string de modelo.
-#define EXTRA_CARS_SPAN 1   // Tamanho máximo de carros extras que podem ser inseridos a mais.
+#define EXTRA_CARS_SPAN 10  // Tamanho máximo de carros que podem ser inseridos a mais.
 
 typedef struct
 {
@@ -18,6 +18,16 @@ typedef struct
     float price;                  // Preço
 } Car;
 
+// Funções de interação com o usuário.
+
+void show_complete_relation(Car cars[], int cars_amount);
+void show_brand_only(Car cars[], int cars_amount, char *brand);
+void show_between_price_range(Car cars[], int cars_amount, float min, float max);
+void insert_new_car(Car cars[], int *cars_amount, Car *new_car);
+void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage);
+
+// Funções auxiliares.
+
 int count_lines(FILE *stream);
 void read_cars(FILE *stream, Car cars[], int vec_size);
 void read_string(char dst[], int max, FILE *stream);
@@ -27,15 +37,18 @@ void strtolower(char str[]);
 void print_options();
 void print_car_data(Car *car);
 
-void show_complete_relation(Car cars[], int cars_amount);
-void show_brand_only(Car cars[], int cars_amount, char *brand);
-void show_between_price_range(Car cars[], int cars_amount, float min, float max);
-void insert_new_car(Car cars[], int *cars_amount, Car *new_car);
-void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage);
-
 int main(void)
 {
-    FILE *file = fopen("carros.txt", "r");
+    char *fname = "carros.txt";
+    FILE *file = fopen(fname, "r");
+
+    // Checa se o arquivo foi aberto corretamente.
+    if (file == NULL)
+    {
+        printf("Não foi possível abrir o arquivo. Encerrando.\n");
+        exit(1);
+    }
+
     const int LINE_COUNT = count_lines(file);
     const int INITIAL_CARS_AMOUNT = LINE_COUNT / 5;
 
@@ -156,6 +169,94 @@ int main(void)
     return 0;
 }
 
+void show_complete_relation(Car cars[], int cars_amount)
+{
+    for (int i = 0; i < cars_amount; i++)
+    {
+        printf("CARRO %d\n", i + 1);
+        print_car_data(&cars[i]);
+    }
+}
+
+void show_brand_only(Car cars[], int cars_amount, char *brand)
+{
+    // Pega a versão lowercase da string passada pelo usuário.
+    char user_brand[strlen(brand) + 1];
+    strcpy(user_brand, brand);
+    strtolower(user_brand);
+
+    bool found = false;
+    for (int i = 0; i < cars_amount; i++)
+    {
+        // Pega a versão lowercase da string do struct.
+        char car_brand[strlen(cars[i].brand) + 1];
+        strcpy(car_brand, cars[i].brand);
+        strtolower(car_brand);
+
+        // Se for a marca desejada pelo usuário
+        if (strcmp(car_brand, user_brand) == 0)
+        {
+            printf("CARRO %d\n", i + 1);
+            print_car_data(&cars[i]);
+            found = true;
+        }
+    }
+
+    // Se não encontrou nenhum registro, avisa o usuário.
+    if (!found)
+        printf("Nenhum carro com a marca \"%s\" encontrado.\n\n", brand);
+}
+
+void show_between_price_range(Car cars[], int cars_amount, float min, float max)
+{
+    bool found = false;
+    for (int i = 0; i < cars_amount; i++)
+    {
+        if (cars[i].price >= min && cars[i].price <= max)
+        {
+            printf("CARRO %d\n", i + 1);
+            print_car_data(&cars[i]);
+            found = true;
+        }
+    }
+
+    // Se não encontrou nenhum registro, avisa o usuário.
+    if (!found)
+        printf("Nenhum carro de preço entre %.2f e %.2f foi encontrado.\n\n", min, max);
+}
+
+void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage)
+{
+    bool found = false;
+    for (int i = 0; i < *cars_amount; i++)
+    {
+        if (cars[i].mileage > max_mileage)
+        {
+            printf("REMOVENDO CARRO: ");
+            print_car_data(&cars[i]);
+            found = true;
+
+            shift_elements_left(cars, *cars_amount, i);
+            *cars_amount = *cars_amount - 1;
+            i--;
+        }
+    }
+
+    // Se não encontrou nenhum registro, avisa o usuário.
+    if (!found)
+        printf("Nenhum carro com mais de %d km foi encontrado.\n\n", max_mileage);
+}
+
+void insert_new_car(Car cars[], int *cars_amount, Car *new_car)
+{
+    int front_index = *cars_amount;
+    cars[front_index] = *new_car;
+    (*cars_amount)++;
+
+    printf("INSERIDO NOVO CARRO: ");
+    print_car_data(&cars[front_index]);
+}
+
 /**
  * @brief Esta função percorre o arquivo procurando por newlines
  * e contando quantas linhas o mesmo possui.
@@ -252,9 +353,6 @@ void read_cars(FILE *stream, Car cars[], int max_cars)
             cars_vec_size++;
         }
     }
-
-    // for (int i = 0; i < 10; i++)
-    // 	printf("\"%s\" \"%s\" \"%d\" \"%d\" \"%.2f\"\n", cars[i].brand, cars[i].model, cars[i].year, cars[i].mileage, cars[i].price);
 }
 
 /**
@@ -331,92 +429,4 @@ void print_car_data(Car *car)
     printf("ANO DE FABRICAÇÃO: %d\n", car->year);
     printf("QUILOMETRAGEM: %d Km\n", car->mileage);
     printf("PREÇO: R$ %.2f\n\n", car->price);
-}
-
-void show_complete_relation(Car cars[], int cars_amount)
-{
-    for (int i = 0; i < cars_amount; i++)
-    {
-        printf("CARRO %d\n", i + 1);
-        print_car_data(&cars[i]);
-    }
-}
-
-void show_brand_only(Car cars[], int cars_amount, char *brand)
-{
-    // Pega a versão lowercase da string passada pelo usuário.
-    char user_brand[strlen(brand) + 1];
-    strcpy(user_brand, brand);
-    strtolower(user_brand);
-
-    bool found = false;
-    for (int i = 0; i < cars_amount; i++)
-    {
-        // Pega a versão lowercase da string do struct.
-        char car_brand[strlen(cars[i].brand) + 1];
-        strcpy(car_brand, cars[i].brand);
-        strtolower(car_brand);
-
-        // Se for a marca desejada pelo usuário
-        if (strcmp(car_brand, user_brand) == 0)
-        {
-            printf("CARRO %d\n", i + 1);
-            print_car_data(&cars[i]);
-            found = true;
-        }
-    }
-
-    // Se não encontrou nenhum registro, avisa o usuário.
-    if (!found)
-        printf("Nenhum carro com a marca \"%s\" encontrado.\n\n", brand);
-}
-
-void show_between_price_range(Car cars[], int cars_amount, float min, float max)
-{
-    bool found = false;
-    for (int i = 0; i < cars_amount; i++)
-    {
-        if (cars[i].price >= min && cars[i].price <= max)
-        {
-            printf("CARRO %d\n", i + 1);
-            print_car_data(&cars[i]);
-            found = true;
-        }
-    }
-
-    // Se não encontrou nenhum registro, avisa o usuário.
-    if (!found)
-        printf("Nenhum carro de preço entre %.2f e %.2f foi encontrado.\n\n", min, max);
-}
-
-void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage)
-{
-    bool found = false;
-    for (int i = 0; i < *cars_amount; i++)
-    {
-        if (cars[i].mileage > max_mileage)
-        {
-            printf("REMOVENDO CARRO: ");
-            print_car_data(&cars[i]);
-            found = true;
-
-            shift_elements_left(cars, *cars_amount, i);
-            *cars_amount = *cars_amount - 1;
-            i--;
-        }
-    }
-
-    // Se não encontrou nenhum registro, avisa o usuário.
-    if (!found)
-        printf("Nenhum carro com mais de %d km foi encontrado.\n\n", max_mileage);
-}
-
-void insert_new_car(Car cars[], int *cars_amount, Car *new_car)
-{
-    int front_index = *cars_amount;
-    cars[front_index] = *new_car;
-    (*cars_amount)++;
-
-    printf("INSERIDO NOVO CARRO: ");
-    print_car_data(&cars[front_index]);
 }
