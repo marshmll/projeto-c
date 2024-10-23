@@ -40,6 +40,7 @@ void read_cars(FILE *stream, Car cars[], int vec_size);
 void read_string(char dst[], int max, FILE *stream);
 void consume_input_garbage(FILE *stream);
 void shift_elements_right(Car vec[], int vec_size, int breakpoint);
+void shift_elements_left(Car vec[], int vec_size, int collapse_point);
 void strtolower(char str[]);
 void print_options();
 void print_car_data(Car *car);
