@@ -53,11 +53,11 @@ int main(void)
     if (file == NULL)
     {
         printf("Não foi possível abrir o arquivo. Encerrando.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     const int LINE_COUNT = count_lines(file);
-    
+
     // Cada carro ocupa 5 linhas.
     const int INITIAL_CARS_AMOUNT = LINE_COUNT / 5;
 
