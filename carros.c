@@ -1,7 +1,7 @@
 /**
  * PROGRAMAÇÃO IMPERATIVA
  * Nome: Renan da Silva Oliveira Andrade.
- * 
+ *
  * 23/10/2024.
  */
 
@@ -41,7 +41,7 @@ void read_string(char dst[], int max, FILE *stream);
 void consume_input_garbage(FILE *stream);
 void shift_elements_right(Car vec[], int vec_size, int breakpoint);
 void shift_elements_left(Car vec[], int vec_size, int collapse_point);
-void strtolower(char str[]);
+void strtolower(char *str);
 void print_options();
 void print_car_data(Car *car);
 
@@ -241,7 +241,7 @@ void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage)
     {
         if (cars[i].mileage > max_mileage)
         {
-            printf("REMOVENDO CARRO: ");
+            printf("REMOVENDO CARRO\n");
             print_car_data(&cars[i]);
             found = true;
 
@@ -258,12 +258,37 @@ void remove_overrunned_cars(Car cars[], int *cars_amount, int max_mileage)
 
 void insert_new_car(Car cars[], int *cars_amount, Car *new_car)
 {
-    int front_index = *cars_amount;
-    cars[front_index] = *new_car;
-    (*cars_amount)++;
+    int insert_pos;     // Variável para guardar a posição de inserção do carro dado.
+    bool found = false; // Flag para verificar se foi encontrada uma posição.
 
-    printf("INSERIDO NOVO CARRO: ");
-    print_car_data(&cars[front_index]);
+    // Procura a primeira posição onde o valor do carro dado é menor do que o valor do
+    // carro na posição.
+    for (int j = 0; j < *cars_amount && found == false; j++)
+    {
+        if (new_car->price < cars[j].price)
+        {
+            insert_pos = j;
+            found = true;
+        }
+    }
+
+    // Se não encontrou, insere na frente do vetor.
+    if (!found)
+    {
+        cars[*cars_amount] = *new_car;
+        (*cars_amount)++;
+    }
+    // Se não, desloca os elementos do vetor para a direita até a posição de inserção
+    // e insere o carro na posição.
+    else
+    {
+        shift_elements_right(cars, *cars_amount, insert_pos);
+        cars[insert_pos] = *new_car;
+        (*cars_amount)++;
+    }
+
+    printf("INSERIDO NOVO CARRO\n");
+    print_car_data(new_car);
 }
 
 /**
@@ -409,10 +434,10 @@ void shift_elements_left(Car vec[], int vec_size, int collapse_point)
 }
 
 /**
- * @brief Itera sobre uma string (char[]) e converte todos os caracteres
+ * @brief Itera sobre uma string (char*) e converte todos os caracteres
  * para lowercase.
  */
-void strtolower(char str[])
+void strtolower(char *str)
 {
     int len = strlen(str);
     for (int i = 0; i < len; i++)
